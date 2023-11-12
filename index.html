@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Generation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: #4caf50;
+            color: white;
+        }
+        h2 {
+            margin: 0; /* Remove default margin for h2 */
+        }
+        #dateTime {
+            margin-left: auto; /* Move to the right by pushing to the end of the flex container */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .total-row {
+            font-weight: bold;
+        }
+
+        input {
+            width: 80px;
+        }
+        #downloadButton {
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 600px) {
+            table, th, td {
+                font-size: 14px;
+            }
+        }
+        @media (max-width: 300px) {
+            table, th, td {
+                font-size: 14px;
+            }
+        }
+
+    </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    </head>
+    
+</head>
+
+<body>
+
+    <header>
+        <div>
+            <h2>Bill Generation Hema Agencies </h2>
+        </div>
+        <div id="dateTime">
+            <!-- Current date and time will be added dynamically using JavaScript -->
+        </div>
+    </header>
+
+    <table id="billTable">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Opening Quantity</th>
+                <th>Sale Quantity</th>
+                <th>Item Cost</th>
+                <th>Sale Total</th>
+                <th>Opening Total</th>
+                <th>Closing Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows will be added dynamically using JavaScript -->
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td>Total</td>
+                <td id="totalOpeningQuantity">0</td>
+                <td id="totalSaleQuantity">0</td>
+                <td id="totalItemCost">0</td>
+                <td id="totalSaleTotal">0</td>
+                <td id="totalOpeningTotal">0</td>
+                <td id="totalClosingQuantity">0</td>
+            </tr>
+        </tfoot>
+    </table>
+    <button id="downloadButton" onclick="downloadPDF()">Download PDF</button>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+             // Add current date and time to the header
+             const dateTimeElement = document.getElementById('dateTime');
+            updateDateTime();
+            setInterval(updateDateTime, 1000); // Update every second
+
+            function updateDateTime() {
+                const currentDate = new Date();
+                const formattedDateTime = currentDate.toLocaleString();
+                dateTimeElement.textContent = formattedDateTime;
+            }
+
+            const tableBody = document.querySelector('#billTable tbody');
+            const totalOpeningQuantity = document.getElementById('totalOpeningQuantity');
+            const totalSaleQuantity = document.getElementById('totalSaleQuantity');
+            const totalItemCost = document.getElementById('totalItemCost');
+            const totalSaleTotal = document.getElementById('totalSaleTotal');
+            const totalOpeningTotal = document.getElementById('totalOpeningTotal');
+            const totalClosingQuantity = document.getElementById('totalClosingQuantity');
+
+            let grandTotalOpeningQuantity = 0;
+            let grandTotalSaleQuantity = 0;
+            let grandTotalItemCost = 0;
+            let grandTotalSaleTotal = 0;
+            let grandTotalOpeningTotal = 0;
+            let grandTotalClosingQuantity = 0;
+
+            // Function to update the total and grand total
+            function updateTotals(row) {
+                const openingTotal = row.openingQuantity * row.itemCost;
+                const saleTotal = row.saleQuantity * row.itemCost;
+                const closingQuantity = row.openingQuantity - row.saleQuantity;
+
+                grandTotalOpeningQuantity += row.openingQuantity;
+                grandTotalSaleQuantity += row.saleQuantity;
+                grandTotalItemCost += row.itemCost;
+                grandTotalSaleTotal += saleTotal;
+                grandTotalOpeningTotal += openingTotal;
+                grandTotalClosingQuantity += closingQuantity;
+
+                totalOpeningQuantity.textContent = grandTotalOpeningQuantity;
+                totalSaleQuantity.textContent = grandTotalSaleQuantity;
+                totalItemCost.textContent = grandTotalItemCost;
+                totalSaleTotal.textContent = grandTotalSaleTotal;
+                totalOpeningTotal.textContent = grandTotalOpeningTotal;
+                totalClosingQuantity.textContent = grandTotalClosingQuantity;
+            }
+
+            // Function to add a new row to the table
+            function addRow(item, openingQuantity, saleQuantity, itemCost) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item}</td>
+                    <td><input type="number" value="${openingQuantity}" min="0" class="openingQuantity"></td>
+                    <td><input type="number" value="${saleQuantity}" min="0" class="saleQuantity"></td>
+                    <td><input type="number" value="${itemCost}" min="0" class="itemCost"></td>
+                    <td>${saleQuantity * itemCost}</td>
+                    <td>${openingQuantity * itemCost}</td>
+                    <td>${openingQuantity - saleQuantity}</td>
+                `;
+                tableBody.appendChild(row);
+
+                // Update totals for each row
+                updateTotals({ openingQuantity, saleQuantity, itemCost });
+
+                // Attach event listeners to input fields for dynamic updates
+                const inputFields = row.querySelectorAll('input');
+                inputFields.forEach(inputField => {
+                    inputField.addEventListener('input', function () {
+                        updateRow(row);
+                    });
+                });
+            }
+
+            // Function to update a row when input fields change
+            function updateRow(row) {
+                const openingQuantity = parseInt(row.querySelector('.openingQuantity').value, 10) || 0;
+                const saleQuantity = parseInt(row.querySelector('.saleQuantity').value, 10) || 0;
+                const itemCost = parseFloat(row.querySelector('.itemCost').value) || 0;
+
+                row.cells[4].textContent = (saleQuantity * itemCost).toFixed(2);
+                row.cells[5].textContent = (openingQuantity * itemCost).toFixed(2);
+                row.cells[6].textContent = (openingQuantity - saleQuantity).toFixed(2);
+
+                // Update totals for each row
+                updateTotals({ openingQuantity, saleQuantity, itemCost });
+            }
+
+            // Sample data, you can replace this with dynamic data from your backend
+            addRow('2.25', 10, 4, 820);
+            addRow('1.25', 10, 8, 570);
+            addRow('750 ML Fla', 10, 6, 888);
+            addRow('750 ML Soda ', 10, 4, 555);
+            addRow('String', 10, 8, 550);
+            addRow('250 ML Pets', 10, 6, 240);
+            addRow('Pepsi Black', 10, 4, 555);
+            addRow('1 Lt Aq', 10, 8, 190);
+            addRow('2 Lt  Aq', 10, 6, 220);
+            addRow('RGB Soda', 10, 4, 240);
+            addRow('RGB flaver', 10, 8, 200);
+            addRow('Slice', 10, 6, 550);
+            addRow('GOA', 10, 4, 500);
+            addRow('Tins', 10, 8, 760);
+           
+          
+            window.downloadPDF = function () {
+                const element = document.body; // This can be any element on your page
+
+                const currentDate = new Date();
+                const dateString = currentDate.toISOString().slice(0, 10); // Format: YYYY-MM-DD
+                const filename = `bill_${dateString}.pdf`;
+
+                html2pdf(element, { filename: filename });
+            };
+        });
+     
+    </script>
+
+</body>
+</html>
