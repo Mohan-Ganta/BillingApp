@@ -9,6 +9,7 @@
         body {
             font-family: Arial, sans-serif;
         }
+
         header {
             display: flex;
             justify-content: space-between;
@@ -17,11 +18,15 @@
             background-color: #4caf50;
             color: white;
         }
+
         h2 {
-            margin: 0; /* Remove default margin for h2 */
+            margin: 0;
+            /* Remove default margin for h2 */
         }
+
         #dateTime {
-            margin-left: auto; /* Move to the right by pushing to the end of the flex container */
+            margin-left: auto;
+            /* Move to the right by pushing to the end of the flex container */
         }
 
         table {
@@ -30,11 +35,14 @@
             margin-bottom: 20px;
         }
 
-        table, th, td {
+        table,
+        th,
+        td {
             border: 1px solid #ddd;
         }
 
-        th, td {
+        th,
+        td {
             padding: 12px;
             text-align: left;
         }
@@ -50,6 +58,7 @@
         input {
             width: 80px;
         }
+
         #downloadButton {
             padding: 10px;
             background-color: #4caf50;
@@ -58,18 +67,22 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        
+
         @media (max-width: 600px) {
-            table, th, td {
-                font-size: 14px;
-            }
-        }
-        @media (max-width: 300px) {
-            table, th, td {
+            table,
+            th,
+            td {
                 font-size: 14px;
             }
         }
 
+        @media (max-width: 300px) {
+            table,
+            th,
+            td {
+                font-size: 14px;
+            }
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -132,9 +145,17 @@
             let grandTotalClosingQuantity = 0;
 
             // Function to update the total and grand total
-            function updateTotals(row) {
-                grandTotalOpeningQuantity += row.openingQuantity;
-                grandTotalSaleQuantity += row.saleQuantity;
+            function updateTotals() {
+                grandTotalOpeningQuantity = 0;
+                grandTotalSaleQuantity = 0;
+
+                // Loop through all rows to recalculate the grand totals
+                const rows = tableBody.querySelectorAll('tr');
+                rows.forEach((row) => {
+                    grandTotalOpeningQuantity += parseInt(row.cells[1].querySelector('input').value, 10) || 0;
+                    grandTotalSaleQuantity += parseInt(row.cells[2].querySelector('input').value, 10) || 0;
+                });
+
                 grandTotalClosingQuantity = grandTotalOpeningQuantity - grandTotalSaleQuantity;
 
                 totalOpeningQuantity.textContent = grandTotalOpeningQuantity;
@@ -170,7 +191,7 @@
                 row.cells[3].textContent = openingQuantity - saleQuantity;
 
                 // Update totals for each row
-                updateTotals({ openingQuantity, saleQuantity });
+                updateTotals();
             }
 
             // Sample data, you can replace this with dynamic data from your backend
