@@ -143,18 +143,15 @@
             }
 
             // Function to add a new row to the table
-            function addRow(item, openingQuantity, saleQuantity) {
+            function addRow(item) {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${item}</td>
-                    <td><input type="number" value="${openingQuantity}" min="0" class="openingQuantity"></td>
-                    <td><input type="number" value="${saleQuantity}" min="0" class="saleQuantity"></td>
-                    <td>${openingQuantity - saleQuantity}</td>
+                    <td><input type="number" value="0" min="0" class="openingQuantity"></td>
+                    <td><input type="number" value="0" min="0" class="saleQuantity"></td>
+                    <td>0</td>
                 `;
                 tableBody.appendChild(row);
-
-                // Update totals for each row
-                updateTotals({ openingQuantity, saleQuantity });
 
                 // Attach event listeners to input fields for dynamic updates
                 const inputFields = row.querySelectorAll('input');
@@ -170,27 +167,27 @@
                 const openingQuantity = parseInt(row.querySelector('.openingQuantity').value, 10) || 0;
                 const saleQuantity = parseInt(row.querySelector('.saleQuantity').value, 10) || 0;
 
-                row.cells[2].textContent = openingQuantity - saleQuantity;
+                row.cells[3].textContent = openingQuantity - saleQuantity;
 
                 // Update totals for each row
                 updateTotals({ openingQuantity, saleQuantity });
             }
 
             // Sample data, you can replace this with dynamic data from your backend
-            addRow('2.25', 10, 4);
-            addRow('1.25', 10, 8);
-            addRow('750 ML Fla', 10, 6);
-            addRow('750 ML Soda ', 10, 4);
-            addRow('String', 10, 8);
-            addRow('250 ML Pets', 10, 6);
-            addRow('Pepsi Black', 10, 4);
-            addRow('1 Lt Aq', 10, 8);
-            addRow('2 Lt  Aq', 10, 6);
-            addRow('RGB Soda', 10, 4);
-            addRow('RGB flaver', 10, 8);
-            addRow('Slice', 10, 6);
-            addRow('GOA', 10, 4);
-            addRow('Tins', 10, 8);
+            addRow('2.25');
+            addRow('1.25');
+            addRow('750 ML Fla');
+            addRow('750 ML Soda');
+            addRow('String');
+            addRow('250 ML Pets');
+            addRow('Pepsi Black');
+            addRow('1 Lt Aq');
+            addRow('2 Lt Aq');
+            addRow('RGB Soda');
+            addRow('RGB flaver');
+            addRow('Slice');
+            addRow('GOA');
+            addRow('Tins');
 
             window.downloadPDF = function () {
                 const element = document.body; // This can be any element on your page
